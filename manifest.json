@@ -1,0 +1,44 @@
+{
+  "name": "PromptPool",
+  "version": "1.0",
+  "description": "Save selected text to a local pool",
+  "manifest_version": 3,
+  "permissions": [
+    "contextMenus",
+    "storage",
+    "notifications",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": {
+      "16": "ppicon16.png",
+      "32": "ppicon32.png",
+      "48": "ppicon48.png",
+      "128": "ppicon128.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "ppicon16.png",
+    "32": "ppicon32.png",
+    "48": "ppicon48.png",
+    "128": "ppicon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
+      "run_at": "document_end",
+      "js": ["contentScript.js"]
+    }
+  ],
+  "web_accessible_resources":[
+    {
+      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
+      "resources": ["image/ppicon32.png"]
+    }
+  ],
+  "options_page": "options.html"
+}
