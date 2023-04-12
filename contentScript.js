@@ -45,9 +45,12 @@ document.addEventListener("mouseup", function() {
           height: 24px;
           cursor: pointer;
         `;
+        icon.style.zIndex = "9999";
+
         document.body.appendChild(icon);
 
         icon.addEventListener("click", function() {
+          console.log('selectedText:'+selectedText);
           chrome.runtime.sendMessage({ type: "saveToPool", text: selectedText }, function(response) {
             console.log(JSON.stringify(response) + "<返回的response");
             if (response.status) {

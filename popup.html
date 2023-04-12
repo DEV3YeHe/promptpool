@@ -24,6 +24,19 @@
         background: #27282B;
       }
 
+      select {
+        width: 180px;
+        padding: 6px;
+        margin-bottom: 4px;
+        border-radius: 3px;
+        /*margin-right: 6px;*/
+        background-color: #202123;
+        border: none;
+        outline: none; /* 去除聚焦时的边框 */
+        color: #ffffff; /* 文字颜色为白色 */
+        font-size: 12px;
+      }
+
       input[type="text"] {
         /*flex: 1;*/
         width: 310px;
@@ -116,11 +129,32 @@
         background-color: #292C35;
       }
 
+      #settings {
+        display: inline-flex; /* 让图标和文字同行排列 */
+        align-items: center; /* 垂直居中 */
+        cursor: pointer; /* 设置为可点击 */
+        opacity: 0.5; 
+        /* 鼠标悬停时的样式 */
+        transition: all 0.1s ease-in-out;
+      }
+      #settings:hover {
+        transform: scale(1.01); /* 缩放大小 */
+        opacity: 1; /* 降低透明度 */
+      }
+
+
       .copy-icon {
         position: absolute;
         top: 10%;
         left: 50%;
         transform: translate(-50%, -50%);
+        z-index: 9998;
+        color: #ffffff;
+      }
+      .copy-icon2 {
+        position: absolute;
+        top: 11%;
+        left: 77%;
         z-index: 9999;
         color: #ffffff;
       }
@@ -137,6 +171,10 @@
     </div>
 
     <div id="searchbody">
+      <select id="tag-select">
+        <option value="">-- ALL Tags --</option>
+      </select>
+
       <div>
         <input type="text" id="search-input" placeholder="Search in pool...">
         <!-- <button id="search-button">Search</button> -->
@@ -148,6 +186,10 @@
         <!-- <button id="export-button">Export</button>
         <button id="import-button">Import</button> -->
       </div>
+    </div>
+    <div id="settings" class="copy-icon2">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="5 0 14 14" width="14" height="14"><path fill="currentColor" d="M12 4a4 4 0 0 0-4 4c0 1.13.47 2.15 1.22 2.87l-1.41 1.41C6.45 11.12 6 9.63 6 8a6 6 0 1 1 12 0c0 1.63-.45 3.12-1.22 4.28l-1.41-1.41A3.95 3.95 0 0 0 16 8a4 4 0 0 0-4-4zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+      <span>Settings</span>
     </div>
     <script src="popup.js"></script>
   </body>

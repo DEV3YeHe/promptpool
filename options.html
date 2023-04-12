@@ -2,18 +2,76 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Options</title>
+  <title>PromptPoolOptions</title>
+  <style>
+    #tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px; /* 设置子元素间隔 */
+    }
+    .tag-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 4px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+    .tag-list-item:hover .delete-button {
+      display: block;
+    }
+    .delete-button {
+      display: none;
+      background-color: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      font-size: 12px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+  </style>
 </head>
 <body>
-  <!-- <h1>Options</h1>
-  <label for="name">Name:</label>
-  <input type="text" id="name"><br><br>
-  <label for="email">Email:</label>
-  <input type="text" id="email"><br><br>
-  <button id="save">Save</button>
-  <script src="options.js"></script> -->
-  <button id="export-button">Export</button>
-  <button id="import-button">Import</button>
+  <button class="tab" data-tab="pool-tab">Pool</button>
+  <button class="tab" data-tab="tags-tab">Tags</button>
+  <button class="tab" data-tab="import-export-tab">Import & Export</button>
+
+  <section class="tab-content active" data-tab="pool-tab">
+    <h2>Pool</h2>
+    <table id="pool-list"></table>
+  </section>
+
+  <section class="tab-content" data-tab="tags-tab">
+    <h2>Tags</h2>
+    <div>
+      <label for="tag-input">Save Tag: </label>
+      <input type="text" id="tag-input">
+      <button id="save-tag-button" disabled>SaveTag</button>
+      <div id="tag-result"></div>
+      <div id="tag-list"></div>
+    </div>
+    <button id="collectTagsButton">Collect Tags</button>
+  </section>
+
+  <section class="tab-content" data-tab="import-export-tab">
+    <h2>Import & Export</h2>
+    <button id="export-button">Export</button>
+    <button id="import-button">Import</button>
+  </section>
+
+  
   <script src="options.js"></script>
 </body>
 </html>

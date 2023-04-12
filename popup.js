@@ -10,6 +10,12 @@ const countAll = document.getElementById("countall");
 
 searchInput.focus();
 
+const settingsBtn = document.getElementById('settings');
+settingsBtn.addEventListener('click', () => {
+  console.log('settings');
+  chrome.runtime.openOptionsPage();
+});
+
 // Show total entries count on window open
 chrome.storage.local.get({ pool: [] }, function(result) {
   const pool = result.pool;
@@ -21,41 +27,59 @@ chrome.storage.local.get({ pool: [] }, function(result) {
 
 searchInput.addEventListener("keydown", function(event) {
   const searchTerm = searchInput.value.trim().toLowerCase();
-
+  console.log('type:'+searchTerm);
   if (event.key === "Enter" && searchTerm) {
     searchInPool();
   }
 });
 
+chrome.storage.local.get({ tags: [] }, function(result) {
+  const tags = result.tags;
+  const tagSelect = document.getElementById("tag-select");
+  tags.forEach(tag => {
+    const option = document.createElement("option");
+    option.value = tag;
+    option.innerText = tag;
+    tagSelect.appendChild(option);
+  });
+});
+
+
 function searchInPool() {
   const searchTerm = searchInput.value.trim().toLowerCase();
-
-  if (!searchTerm) {
+  const selectedTag = document.getElementById("tag-select").value;
+  if (!searchTerm && !selectedTag) {
     return;
   }
-
   chrome.storage.local.get({ pool: [] }, function(result) {
     const pool = result.pool;
-    const matchedTexts = pool.filter(text => text.toLowerCase().includes(searchTerm)).slice(0, 50);
-
-    if (matchedTexts.length === 0) {
+    let filteredItems = pool;
+    if (selectedTag) {
+      console.log("selectedTag:"+selectedTag);
+      console.log(pool);
+      filteredItems = pool.filter(item => item.tags.includes(selectedTag));
+    }
+    if (searchTerm) {
+      console.log("searchTerm:"+searchTerm);
+      filteredItems = filteredItems.filter(item => item.text.toLowerCase().includes(searchTerm));
+    }
+    const matchedItems = filteredItems.slice(0, 50);
+    if (matchedItems.length === 0) {
       resultDiv.innerHTML = "<p style=\'border:none;color:#eeeeee;\'>No result found.</p>";
     } else {
-      resultDiv.innerHTML = matchedTexts.map(text => "<p>" + text + "</p>").join("");
-
+      resultDiv.innerHTML = matchedItems.map(item => "<p>" + item.text + "</p>").join("");
       const resultItems = document.querySelectorAll("#result p");
-
       resultItems.forEach(item => {
         item.addEventListener("click", function() {
           copyToClipboard(item.innerText);
         });
       });
     }
-
-    // Update count
-    countRes.innerText = `${matchedTexts.length}/`;
+    countRes.innerText = `${matchedItems.length}/`;
   });
 }
+
+
 
 function copyToClipboard(text) {
   const tempInput = document.createElement("textarea");
