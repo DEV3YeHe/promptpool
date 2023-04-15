@@ -3,10 +3,6 @@ const searchButton = document.getElementById("search-button");
 const resultDiv = document.getElementById("result");
 const countRes = document.getElementById("countres");
 const countAll = document.getElementById("countall");
-// const exportButton = document.getElementById("export-button");
-// const importButton = document.getElementById("import-button");
-
-// searchButton.addEventListener("click", searchInPool);
 
 searchInput.focus();
 
@@ -51,19 +47,21 @@ function searchInPool() {
     const pool = result.pool;
     let filteredItems = pool;
     if (selectedTag) {
-      console.log("selectedTag:"+selectedTag);
-      console.log(pool);
       filteredItems = pool.filter(item => item.tags.includes(selectedTag));
     }
     if (searchTerm) {
-      console.log("searchTerm:"+searchTerm);
       filteredItems = filteredItems.filter(item => item.text.toLowerCase().includes(searchTerm));
     }
     const matchedItems = filteredItems.slice(0, 50);
     if (matchedItems.length === 0) {
       resultDiv.innerHTML = "<p style=\'border:none;color:#eeeeee;\'>No result found.</p>";
     } else {
-      resultDiv.innerHTML = matchedItems.map(item => "<p>" + item.text + "</p>").join("");
+      resultDiv.innerHTML = matchedItems.map(item => `
+        <div>
+          <p style="padding: 5px;">${item.text}</p>
+          <p style="background-color: #999; color: black; font-size:10px; margin-bottom:5px; border:none;">${item.msg}</p>
+        </div>
+      `).join("");
       const resultItems = document.querySelectorAll("#result p");
       resultItems.forEach(item => {
         item.addEventListener("click", function() {
@@ -74,6 +72,7 @@ function searchInPool() {
     countRes.innerText = `${matchedItems.length}/`;
   });
 }
+
 
 
 

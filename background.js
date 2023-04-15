@@ -78,12 +78,20 @@ function saveToPool(text, tags) {
   });
 }
 
+
+
 function translate(text) {
-  var appid = '20230407001632617';
+  
+  chrome.storage.sync.get('lang', function(result) {
+    var lang = '';
+    lang = result.lang || 'zh';
+    console.log('lang!!:'+lang);
+    var appid = '20230407001632617';
   var key = 'farhYMhSxKG05lOEs9cA';
   var salt = (new Date).getTime();
   var from = 'en';
-  var to = 'zh';
+  var to = lang;
+  console.log('to!!:'+to);
   var str1 = appid + text + salt + key;
   var sign = MD5(str1);
 
@@ -106,7 +114,12 @@ function translate(text) {
     .catch(error => {
       console.error('Error handling response:', error);
     });
+  });
+  // console.log('lang!!!!:'+lang);
+  
 }
+
+
 
 
 
@@ -116,7 +129,7 @@ function updatePool(originalText, translatedText) {
     pool.forEach(function (item, index) {
       if (item.text === originalText) {
         item.msg = translatedText;
-        item.img = '';
+        item.img = 'http://promptpool.yehe.wtf/no.jpg';
       }
     });
     chrome.storage.local.set({ pool: pool }, function() {

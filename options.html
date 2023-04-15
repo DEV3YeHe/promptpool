@@ -43,6 +43,8 @@
     table {
       border-collapse: collapse;
       margin-top: 16px;
+      table-layout: fixed;
+      width: auto;
     }
 
     th {
@@ -57,7 +59,38 @@
     td {
       padding: 8px;
       border: 1px solid #ddd;
+      word-wrap: break-word;
+      max-width: 600px;
     }
+
+
+    button.del {
+      display: block;
+      width: 60px;
+      height: 20px;
+      font-size: 12px;
+      background-color: red;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    button.edit {
+      display: block;
+      width: 60px;
+      height: 20px;
+      font-size: 12px;
+      background-color: white;
+      color: #333;
+    }
+
+    .pooltitle {
+      display: inline-block;
+    }
+    .poollinks {
+      padding-bottom: 20px;
+      /*display: inline-block;*/
+    }
+
 
   </style>
 </head>
@@ -65,9 +98,12 @@
   <button class="tab" data-tab="pool-tab">Pool</button>
   <button class="tab" data-tab="tags-tab">Tags</button>
   <button class="tab" data-tab="import-export-tab">Import & Export</button>
+  <button class="tab" data-tab="settings-tab">Settings</button>
+
 
   <section class="tab-content active" data-tab="pool-tab">
-    <h2>Pool</h2>
+    <h2 class="pooltitle">Pool</h2>
+    <div id="tag-checkbox" style="display: flex; flex-wrap: wrap;"></div>
     <table id="pool-table"></table>
   </section>
 
@@ -87,6 +123,23 @@
     <h2>Import & Export</h2>
     <button id="export-button">Export</button>
     <button id="import-button">Import</button>
+  </section>
+
+  <section class="tab-content" data-tab="settings-tab">
+    <h2>Settings</h2>
+    <a class="poollinks" href="https://pools.yehe.wtf/">More Pools(soon)</a>
+    <section class="tab-content" data-tab="settings-tab">
+    <div>
+      <label for="lang-select">Language:</label>
+      <select id="lang-select">
+        <option value="zh">简体中文</option>
+        <option value="jp">日本語</option>
+        <option value="kor">한국인</option>
+        <option value="ru">Корейский</option>
+      </select>
+    </div>
+</section>
+
   </section>
 
   

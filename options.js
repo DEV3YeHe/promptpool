@@ -4,6 +4,13 @@ const saveTagButton = document.getElementById("save-tag-button");
 const tagInput = document.getElementById("tag-input");
 const tagResult = document.getElementById("tag-result");
 const tagList = document.getElementById("tag-list");
+const langSelect = document.getElementById("lang-select");
+const langOptions = {
+  'zh': '简体中文',
+  'jp': '日本語',
+  'kor': '한국인',
+  'ru': 'Корейский'
+};
 
 exportButton.addEventListener("click", exportPool);
 importButton.addEventListener("click", importPool);
@@ -24,7 +31,32 @@ tabs.forEach(tab => {
   });
 });
 
+let lang = 'zh'; // Set default value
+chrome.storage.sync.get(['lang'], function(result) {
+  if (result.lang) {
+    lang = result.lang;
+  } else {
+    chrome.storage.sync.set({ lang: lang }, function() {
+      console.log('Language is set to ' + lang);
+    });
+  }
+  langSelect.value = lang;
+});
+
+langSelect.addEventListener('change', () => {
+  const selectedLang = langSelect.value;
+  lang = selectedLang;
+  chrome.storage.sync.set({ lang: lang }, function() {
+    const langOption = langOptions[selectedLang];
+    console.log(`Language changed to: ${langOption}`);
+    // Do something to update UI based on selected language
+  });
+});
+
+
 function showPool() {
+  console.log('showPool');
+  // collectTags();
   chrome.storage.local.get({ pool: [] }, function(result) {
     const pool = result.pool;
     const poolTable = document.getElementById('pool-table');
@@ -33,7 +65,7 @@ function showPool() {
     // 创建表头
     const thead = document.createElement('thead');
     const tr = document.createElement('tr');
-    ['img', 'text', 'tags', 'msg', 'option'].forEach(header => {
+    ['IMG', 'Prompt', 'Tags', 'Translation', 'Option'].forEach(header => {
       const th = document.createElement('th');
       th.textContent = header;
       tr.appendChild(th);
@@ -43,23 +75,146 @@ function showPool() {
 
     // 创建表格内容
     const tbody = document.createElement('tbody');
-    pool.forEach(item => {
-      const tr = document.createElement('tr');
-      ['IMG', 'Prompt', 'Tags', 'Translation', 'Option'].forEach(key => {
-        const td = document.createElement('td');
-        td.textContent = item[key];
-        tr.appendChild(td);
+    chrome.storage.local.get({ tags: [] }, function(tagResult) {
+      const tags = tagResult.tags;
+      const checkedTags = Array.from(document.querySelectorAll('input[name="tag-checkbox"]:checked')).map(el => el.value);
+      pool.filter(item => {
+        return item.tags.split(',').some(tag => checkedTags.includes(tag.trim()));
+      }).forEach((item, index) => {
+        const tr = document.createElement('tr');
+        ['img', 'text', 'tags', 'msg', 'option'].forEach(key => {
+          const td = document.createElement('td');
+          if (key === 'option') {
+            // 添加DEL和Edit按钮
+            const delBtn = document.createElement('button');
+            delBtn.textContent = 'DEL';
+            delBtn.classList.add('del');
+            delBtn.onclick = function() {
+              delpoolob(index);
+            };
+            td.appendChild(delBtn);
+
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'Edit';
+            editBtn.classList.add('edit');
+            editBtn.onclick = function() {
+              editpoolob(index, item);
+            };
+            td.appendChild(editBtn);
+          } else if (key === 'img') {
+
+            // 创建图片链接
+            const link = document.createElement('a');
+            link.href = item[key];
+            link.target = '_blank';
+
+            // 显示图片
+            const img = document.createElement('img');
+            img.src = item[key];
+            img.style.width = '100px';
+            img.style.height = '100px';
+
+            // 将图片添加到链接中，并将链接添加到单元格中
+            link.appendChild(img);
+            td.appendChild(link);
+
+          } else {
+            td.textContent = item[key];
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
       });
-      tbody.appendChild(tr);
+      poolTable.appendChild(tbody);
     });
-    poolTable.appendChild(tbody);
+  });
+
+}
+
+
+function delpoolob(index) {
+  chrome.storage.local.get({ pool: [] }, function(result) {
+    const pool = result.pool;
+    pool.splice(index, 1); // 删除对应的对象
+    chrome.storage.local.set({ pool: pool }, function() {
+      showPool(); // 更新界面
+    });
   });
 }
 
-// 在页面加载后调用showPool函数，展示pool中的内容
+function editpoolob(index, item) {
+  // 创建输入框和按钮
+  const imgInput = document.createElement('input');
+  imgInput.type = 'text';
+  imgInput.value = item.img;
+  const textInput = document.createElement('input');
+  textInput.type = 'text';
+  textInput.value = item.text;
+  const msgInput = document.createElement('input');
+  msgInput.type = 'text';
+  msgInput.value = item.msg;
+  const tagsInput = document.createElement('input');
+  tagsInput.type = 'text';
+  tagsInput.value = item.tags;
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save';
+  saveBtn.onclick = function() {
+    item.img = imgInput.value;
+    item.text = textInput.value;
+    item.msg = msgInput.value;
+    item.tags = tagsInput.value;
+    chrome.storage.local.get({ pool: [] }, function(result) {
+      const pool = result.pool;
+      pool[index] = item;
+      chrome.storage.local.set({ pool: pool }, function() {
+        showPool();
+        collectTags();
+        dialog.close(); // 更新界面并关闭弹窗
+      });
+    });
+  };
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = function() {
+    dialog.close(); // 关闭弹窗
+  };
+
+  // 创建弹窗并显示
+  const dialog = document.createElement('dialog');
+  const form = document.createElement('form');
+  const fieldset = document.createElement('fieldset');
+  const legend = document.createElement('legend');
+  legend.textContent = 'Edit Pool Object';
+  fieldset.appendChild(legend);
+  const imgLabel = document.createElement('label');
+  imgLabel.textContent = 'IMG:';
+  imgLabel.appendChild(imgInput);
+  fieldset.appendChild(imgLabel);
+  const textLabel = document.createElement('label');
+  textLabel.textContent = 'Prompt:';
+  textLabel.appendChild(textInput);
+  fieldset.appendChild(textLabel);
+  const msgLabel = document.createElement('label');
+  msgLabel.textContent = 'Translation:';
+  msgLabel.appendChild(msgInput);
+  fieldset.appendChild(msgLabel);
+  const tagsLabel = document.createElement('label');
+  tagsLabel.textContent = 'Tags:';
+  tagsLabel.appendChild(tagsInput);
+  fieldset.appendChild(tagsLabel);
+  form.appendChild(fieldset);
+  const btnGroup = document.createElement('div');
+  btnGroup.classList.add('btn-group');
+  btnGroup.appendChild(saveBtn);
+  btnGroup.appendChild(cancelBtn);
+  form.appendChild(btnGroup);
+  dialog.appendChild(form);
+  document.body.appendChild(dialog);
+  dialog.showModal();
+}
+
+// 显示界面
 document.addEventListener('DOMContentLoaded', showPool);
-
-
 
 
 function exportPool() {
@@ -88,8 +243,6 @@ function exportPool() {
     }, 1500);
   });
 }
-
-
 
 function importPool() {
   const input = document.createElement("input");
@@ -153,8 +306,8 @@ tagInput.addEventListener("input", function() {
   }
 });
 
-
 function collectTags() {
+  console.log('collectTags');
   chrome.storage.local.get({ pool: [] }, function(result) {
     const pool = result.pool;
     let tags = [];
@@ -183,11 +336,8 @@ function collectTags() {
   });
 }
 
-
-
 const collectTagsButton = document.getElementById("collectTagsButton");
 collectTagsButton.addEventListener("click", collectTags);
-
 
 function saveTag() {
   const tag = tagInput.value.trim();
@@ -215,24 +365,46 @@ function saveTag() {
 }
 
 function showTags() {
-      chrome.storage.local.get({ tags: [] }, function(result) {
-        const tags = result.tags;
-        let html = "";
-        for (let tag of tags) {
-          html += `
-            <div class="tag-list-item">
-              <div>${tag}</div>
-              <button class="delete-button" data-tag="${tag}">x</button>
-            </div>
-          `;
-        }
-        tagList.innerHTML = html;
-        bindDeleteButtonListeners();
-        chrome.runtime.sendMessage({ type: "refreshTags" }, function(response) {
-          // console.log(JSON.stringify(response) + "< tags");
-        });
-      });
+  chrome.storage.local.get({ tags: [], checkedTags: [] }, function(result) {
+    const tags = result.tags;
+    tags.unshift('default');
+    let html = "";
+    for (let tag of tags) {
+      html += `
+        <div class="tag-list-item">
+          <div>${tag}</div>
+          <button class="delete-button" data-tag="${tag}">x</button>
+        </div>
+      `;
     }
+    tagList.innerHTML = html;
+    bindDeleteButtonListeners();
+    chrome.runtime.sendMessage({ type: "refreshTags" }, function(response) {
+      // console.log(JSON.stringify(response) + "< tags");
+    });
+    const tagCheckbox = document.getElementById("tag-checkbox");
+    const checkedTags = result.checkedTags;
+    const tagCheckboxHtml = tags.map(tag => {
+      const isChecked = tag === 'default' || checkedTags.includes(tag) ? 'checked' : '';
+      return `
+        <div style="display: flex; align-items: center; margin-right: 10px;">
+          <input type="checkbox" name="tag-checkbox" value="${tag}" ${isChecked}>
+          <label style="margin-left: 5px;">${tag}</label>
+        </div>
+      `;
+    }).join("");
+
+    tagCheckbox.innerHTML = tagCheckboxHtml;
+    tagCheckbox.addEventListener("change", function() {
+      const checkedTags = Array.from(document.querySelectorAll('input[name="tag-checkbox"]:checked')).map(el => el.value);
+      chrome.storage.local.set({ checkedTags });
+      showPool();
+    });
+  });
+}
+
+
+
 
     function bindDeleteButtonListeners() {
       const deleteButtons = document.querySelectorAll(".delete-button");
