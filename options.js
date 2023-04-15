@@ -27,18 +27,38 @@ tabs.forEach(tab => {
 function showPool() {
   chrome.storage.local.get({ pool: [] }, function(result) {
     const pool = result.pool;
-    const poolList = document.getElementById('pool-list');
-    poolList.innerHTML = '';
-    pool.forEach(item => {
-      const listItem = document.createElement('li');
-      listItem.textContent = item.text;
-      poolList.appendChild(listItem);
+    const poolTable = document.getElementById('pool-table');
+    poolTable.innerHTML = '';
+
+    // 创建表头
+    const thead = document.createElement('thead');
+    const tr = document.createElement('tr');
+    ['img', 'text', 'tags', 'msg', 'option'].forEach(header => {
+      const th = document.createElement('th');
+      th.textContent = header;
+      tr.appendChild(th);
     });
+    thead.appendChild(tr);
+    poolTable.appendChild(thead);
+
+    // 创建表格内容
+    const tbody = document.createElement('tbody');
+    pool.forEach(item => {
+      const tr = document.createElement('tr');
+      ['IMG', 'Prompt', 'Tags', 'Translation', 'Option'].forEach(key => {
+        const td = document.createElement('td');
+        td.textContent = item[key];
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    poolTable.appendChild(tbody);
   });
 }
 
 // 在页面加载后调用showPool函数，展示pool中的内容
 document.addEventListener('DOMContentLoaded', showPool);
+
 
 
 
@@ -84,29 +104,44 @@ function importPool() {
       const items = JSON.parse(text);
       chrome.storage.local.get({ pool: [] }, function(result) {
         const existingPool = result.pool;
-        const newItems = items.filter(item => !existingPool.some(existingItem => existingItem.text === item.text)); // 过滤掉已存在的文案
-        const newPool = [...existingPool, ...newItems];
+        const updatedItems = [];
+        const newItems = items.filter(item => {
+          let hasChanged = false;
+          const existingItem = existingPool.find(existingItem => existingItem.text === item.text);
+          if (existingItem) {
+            // use Object.keys() to filter out any unexpected keys in item
+            const updatedItem = Object.keys(item).reduce((obj, key) => {
+              if (existingItem.hasOwnProperty(key) && existingItem[key] !== item[key]) {
+                obj[key] = item[key];
+                hasChanged = true;
+              } else {
+                obj[key] = existingItem[key];
+              }
+              return obj;
+            }, {});
+            if (hasChanged) {
+              updatedItems.push(updatedItem);
+            }
+            return false;
+          } else {
+            return true;
+          }
+        });
+        const newPool = [...existingPool, ...newItems, ...updatedItems];
         chrome.storage.local.set({ pool: newPool }, function() {
           const successMessage = document.createElement("span");
-          successMessage.innerText = `Imported ${newItems.length} items successfully.`; // 更新成功导入的文案数量
+          successMessage.innerText = `Imported ${newItems.length} new items, updated ${updatedItems.length} items successfully.`;
           successMessage.className = "success-message";
           document.body.appendChild(successMessage);
           setTimeout(function() {
             document.body.removeChild(successMessage);
             collectTags();
           }, 1500);
-
-          chrome.storage.local.get({ pool: [] }, function(result) {
-            const pool = result.pool;
-            countAll.innerText = `Total: ${pool.length}`;
-          });
         });
       });
     };
-
   });
   input.click();
-
 }
 
 
@@ -118,20 +153,26 @@ tagInput.addEventListener("input", function() {
   }
 });
 
+
 function collectTags() {
   chrome.storage.local.get({ pool: [] }, function(result) {
     const pool = result.pool;
     let tags = [];
     for (let item of pool) {
-      if (item.tags && item.tags.length > 0) {
+      if (item.tags && item.tags.length > 0 && !item.tags.includes('default')) {
         tags = tags.concat(item.tags);
       }
     }
     chrome.storage.local.get({ tags: [] }, function(result) {
       const existingTags = result.tags;
-      tags = tags.filter(tag => !existingTags.includes(tag));
-      const newTags = [...existingTags, ...tags];
-      chrome.storage.local.set({ tags: newTags }, function() {
+      // Remove 'default' from existing tags
+      const index = existingTags.indexOf('default');
+      if (index > -1) {
+        existingTags.splice(index, 1);
+      }
+      // Remove duplicates and add new tags
+      const newTags = new Set([...existingTags, ...tags]);
+      chrome.storage.local.set({ tags: Array.from(newTags) }, function() {
         tagResult.innerText = `Collected ${tags.length} tags successfully`;
         setTimeout(function() {
           tagResult.innerText = "";
@@ -141,6 +182,8 @@ function collectTags() {
     });
   });
 }
+
+
 
 const collectTagsButton = document.getElementById("collectTagsButton");
 collectTagsButton.addEventListener("click", collectTags);
@@ -186,7 +229,7 @@ function showTags() {
         tagList.innerHTML = html;
         bindDeleteButtonListeners();
         chrome.runtime.sendMessage({ type: "refreshTags" }, function(response) {
-          console.log(JSON.stringify(response) + "<刷新tags");
+          // console.log(JSON.stringify(response) + "< tags");
         });
       });
     }

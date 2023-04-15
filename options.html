@@ -40,6 +40,24 @@
     .tab-content.active {
       display: block;
     }
+    table {
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    th {
+      background-color: #2c87c5;
+      color: white;
+      font-weight: bold;
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    td {
+      padding: 8px;
+      border: 1px solid #ddd;
+    }
 
   </style>
 </head>
@@ -50,7 +68,7 @@
 
   <section class="tab-content active" data-tab="pool-tab">
     <h2>Pool</h2>
-    <table id="pool-list"></table>
+    <table id="pool-table"></table>
   </section>
 
   <section class="tab-content" data-tab="tags-tab">

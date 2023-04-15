@@ -12,7 +12,6 @@ searchInput.focus();
 
 const settingsBtn = document.getElementById('settings');
 settingsBtn.addEventListener('click', () => {
-  console.log('settings');
   chrome.runtime.openOptionsPage();
 });
 
@@ -21,9 +20,6 @@ chrome.storage.local.get({ pool: [] }, function(result) {
   const pool = result.pool;
   countAll.innerText = `${pool.length}`;
 });
-
-// exportButton.addEventListener("click", exportPool);
-// importButton.addEventListener("click", importPool);
 
 searchInput.addEventListener("keydown", function(event) {
   const searchTerm = searchInput.value.trim().toLowerCase();

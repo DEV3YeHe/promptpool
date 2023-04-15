@@ -1,6 +1,6 @@
 {
   "name": "PromptPool",
-  "version": "2.0",
+  "version": "2.1",
   "description": "Save selected text to a local pool",
   "manifest_version": 3,
   "permissions": [

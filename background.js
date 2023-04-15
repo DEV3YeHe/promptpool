@@ -1,3 +1,6 @@
+// 引入CryptoJS库
+importScripts('lib/md5.js');
+
 chrome.runtime.onInstalled.addListener(function() {
   console.log("onInstalled");
   createContextMenu();
@@ -27,7 +30,7 @@ function createContextMenu() {
     }, function() {
       // 创建二级菜单
       chrome.storage.local.get({ tags: [] }, function(result) {
-        console.log("更新tag选项");
+        console.log("Refresh Tags");
         const tags = result.tags;
         const parentId = "addToPool";
         for (let tag of tags) {
@@ -50,29 +53,79 @@ function createContextMenu() {
 }
 
 function saveToPool(text, tags) {
-  console.log('tags:'+tags);
-if (!tags) {
-  console.log('tags没有');
-tags = "default";
-}
-chrome.storage.local.get({ pool: [] }, function(result) {
-const pool = result.pool;
-// Check if text is already in pool
-const exists = pool.some(item => item.text === text);
+  console.log('Tags ready?'+tags);
+  if (!tags) {
+    console.log('No Tags');
+    tags = "default";
+  }
+  chrome.storage.local.get({ pool: [] }, function(result) {
+    const pool = result.pool;
+    // Check if text is already in pool
+    const exists = pool.some(item => item.text === text);
 
-if (exists) {
-  // Text already exists in pool, show error notification
-  showNotificationError("Text already exists in pool.");
-} else {
-  // Text doesn't exist in pool, save to pool and show success notification
-  pool.push({ text: text, tags: tags });
-  chrome.storage.local.set({ pool: pool }, function() {
-    console.log("Saved to pool:", { text: text, tags: tags });
-    showNotificationDone("Saved to pool."+ JSON.stringify({ text: text, tags: tags }));
+    if (exists) {
+      // Text already exists in pool, show error notification
+      showNotificationError("Text already exists in pool.");
+    } else {
+      // Text doesn't exist in pool, save to pool and show success notification
+      pool.push({ text: text, tags: tags });
+      chrome.storage.local.set({ pool: pool }, function() {
+        console.log("Saved to pool:", { text: text, tags: tags });
+        showNotificationDone("Saved: "+ JSON.stringify(text) + ' (' + JSON.stringify( tags ) + ')');
+        translate(text);
+      });
+    }
   });
 }
-});
+
+function translate(text) {
+  var appid = '20230407001632617';
+  var key = 'farhYMhSxKG05lOEs9cA';
+  var salt = (new Date).getTime();
+  var from = 'en';
+  var to = 'zh';
+  var str1 = appid + text + salt + key;
+  var sign = MD5(str1);
+
+  var url = 'http://api.fanyi.baidu.com/api/trans/vip/translate?q=' + text + '&from=' + from + '&to=' + to + '&appid=' + appid + '&salt=' + salt + '&sign=' + sign;
+
+  fetch(url)
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error('Network response was not ok.');
+    })
+    .then(data => {
+      console.log(data);
+      if (data.trans_result) {
+        const translatedText = data.trans_result[0].dst;
+        updatePool(text, translatedText);
+      }
+    })
+    .catch(error => {
+      console.error('Error handling response:', error);
+    });
 }
+
+
+
+function updatePool(originalText, translatedText) {
+  chrome.storage.local.get({ pool: [] }, function(result) {
+    const pool = result.pool;
+    pool.forEach(function (item, index) {
+      if (item.text === originalText) {
+        item.msg = translatedText;
+        item.img = '';
+      }
+    });
+    chrome.storage.local.set({ pool: pool }, function() {
+      console.log("Updated pool:", pool);
+    });
+  });
+}
+
+
 
 chrome.runtime.onMessage.addListener(
 
