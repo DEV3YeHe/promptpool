@@ -68,7 +68,7 @@ function saveToPool(text, tags) {
       showNotificationError("Text already exists in pool.");
     } else {
       // Text doesn't exist in pool, save to pool and show success notification
-      pool.push({ text: text, tags: tags });
+      pool.push({ text: text, tags: tags.toString() });
       chrome.storage.local.set({ pool: pool }, function() {
         console.log("Saved to pool:", { text: text, tags: tags });
         showNotificationDone("Saved: "+ JSON.stringify(text) + ' (' + JSON.stringify( tags ) + ')');

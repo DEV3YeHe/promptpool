@@ -45,6 +45,7 @@
   width: 100px;
   height: 100px;
   margin-right: 10px;
+  object-fit: cover;
 }
 
 .card-content {
@@ -187,7 +188,7 @@
   border-radius: 5px;
   cursor: pointer;
 }
-hover
+
 .main-button:hover {
   border: 1px solid #fff;
 }
@@ -223,7 +224,7 @@ hover
     /* 2. 左右两侧区域样式 */
     .container {
       display: flex;
-      height: calc(100vh - 60px);
+      height: calc(100vh);
       background-color: #15161A;
     }
 
@@ -237,7 +238,10 @@ hover
     .main {
       flex: 1;
       padding: 20px;
+      overflow-y: auto;
+      height: calc(100vh - 100px);
     }
+
 
     #tag-list {
       display: flex;
@@ -360,14 +364,11 @@ hover
     #tag-checkbox {
       margin-bottom: 16px;
     }
-
-
-
   </style>
 </head>
 <body>
   <header class="header">
-    <img src="image/niji2logo.svg" alt="Logo" />
+    <img src="image/niji2logo.png" alt="Logo" />
     <div class="header-icons">
       <a href="#" class="wallet-icon"><img src="image/coffee@3x.png" alt="Donation" /></a>
       <a href="https://twitter.com/Artist3YeHe" target="_blank"><img src="image/twitterlogo@3x.png" alt="twitter" /></a>
@@ -398,9 +399,6 @@ hover
     </div>
   </div>
 </div>
-
-
-
 
   <div class="container">
     <div class="sidebar">
@@ -468,14 +466,6 @@ hover
     </div>
   </div>
 
-  <script src="options.js"></script>
-
-
-
-
-  
-
-  
   <script src="options.js"></script>
 </body>
 </html>

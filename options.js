@@ -449,23 +449,23 @@ function showTags() {
 
 
 
-    function bindDeleteButtonListeners() {
-      const deleteButtons = document.querySelectorAll(".delete-button");
-      deleteButtons.forEach(button => {
-        button.addEventListener("click", function() {
-          const tag = button.dataset.tag;
-          chrome.storage.local.get({ tags: [] }, function(result) {
-            const tags = result.tags;
-            const index = tags.indexOf(tag);
-            if (index !== -1) {
-              tags.splice(index, 1);
-              chrome.storage.local.set({ tags: tags }, function() {
-                showTags(); // 删除Tag成功后更新Tag列表
-              });
-            }
-          });
+  function bindDeleteButtonListeners() {
+    const deleteButtons = document.querySelectorAll(".delete-button");
+    deleteButtons.forEach(button => {
+      button.addEventListener("click", function() {
+        const tag = button.dataset.tag;
+        chrome.storage.local.get({ tags: [] }, function(result) {
+          const tags = result.tags;
+          const index = tags.indexOf(tag);
+          if (index !== -1) {
+            tags.splice(index, 1);
+            chrome.storage.local.set({ tags: tags }, function() {
+              showTags(); // 删除Tag成功后更新Tag列表
+            });
+          }
         });
       });
-    }
+    });
+  }
 
     showTags();
