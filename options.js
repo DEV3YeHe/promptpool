@@ -1,5 +1,5 @@
-const exportButton = document.getElementById("export-button");
 const importButton = document.getElementById("import-button");
+const exportButton = document.getElementById("export-button");
 const saveTagButton = document.getElementById("save-tag-button");
 const tagInput = document.getElementById("tag-input");
 const tagResult = document.getElementById("tag-result");
@@ -11,6 +11,11 @@ const langOptions = {
   'kor': '한국인',
   'ru': 'Корейский'
 };
+const walletIcon = document.querySelector('.wallet-icon');
+const popupContainer = document.querySelector('.popup-container');
+const closeButton = document.querySelector('.close-button');
+const countAll = document.getElementById("countall");
+const countAllTagSpan = document.getElementById("countalltag");
 
 exportButton.addEventListener("click", exportPool);
 importButton.addEventListener("click", importPool);
@@ -24,12 +29,38 @@ tabs.forEach(tab => {
     tabContents.forEach(content => {
       if (content.dataset.tab === tabId) {
         content.style.display = 'block';
+        content.classList.add('active');
       } else {
         content.style.display = 'none';
+        content.classList.remove('active');
       }
     });
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
   });
 });
+
+chrome.storage.local.get({ pool: [] }, function(result) {
+  const pool = result.pool;
+  countAll.innerText = `(${pool.length})`;
+});
+
+
+let isPopupOpen = false;
+
+walletIcon.addEventListener('click', () => {
+  if (!isPopupOpen) {
+    popupContainer.style.display = 'flex';
+    isPopupOpen = true;
+  }
+});
+
+closeButton.addEventListener('click', () => {
+  popupContainer.style.display = 'none';
+  isPopupOpen = false;
+});
+
+
 
 let lang = 'zh'; // Set default value
 chrome.storage.sync.get(['lang'], function(result) {
@@ -56,80 +87,91 @@ langSelect.addEventListener('change', () => {
 
 function showPool() {
   console.log('showPool');
-  // collectTags();
   chrome.storage.local.get({ pool: [] }, function(result) {
     const pool = result.pool;
-    const poolTable = document.getElementById('pool-table');
-    poolTable.innerHTML = '';
+    const poolCards = document.getElementById('pool-cards');
+    poolCards.innerHTML = '';
 
-    // 创建表头
-    const thead = document.createElement('thead');
-    const tr = document.createElement('tr');
-    ['IMG', 'Prompt', 'Tags', 'Translation', 'Option'].forEach(header => {
-      const th = document.createElement('th');
-      th.textContent = header;
-      tr.appendChild(th);
-    });
-    thead.appendChild(tr);
-    poolTable.appendChild(thead);
-
-    // 创建表格内容
-    const tbody = document.createElement('tbody');
     chrome.storage.local.get({ tags: [] }, function(tagResult) {
       const tags = tagResult.tags;
       const checkedTags = Array.from(document.querySelectorAll('input[name="tag-checkbox"]:checked')).map(el => el.value);
       pool.filter(item => {
         return item.tags.split(',').some(tag => checkedTags.includes(tag.trim()));
       }).forEach((item, index) => {
-        const tr = document.createElement('tr');
-        ['img', 'text', 'tags', 'msg', 'option'].forEach(key => {
-          const td = document.createElement('td');
-          if (key === 'option') {
-            // 添加DEL和Edit按钮
-            const delBtn = document.createElement('button');
-            delBtn.textContent = 'DEL';
-            delBtn.classList.add('del');
-            delBtn.onclick = function() {
-              delpoolob(index);
-            };
-            td.appendChild(delBtn);
+        const card = document.createElement('div');
+        card.classList.add('card');
 
-            const editBtn = document.createElement('button');
-            editBtn.textContent = 'Edit';
-            editBtn.classList.add('edit');
-            editBtn.onclick = function() {
-              editpoolob(index, item);
-            };
-            td.appendChild(editBtn);
-          } else if (key === 'img') {
+        // 添加图片
+        const img = document.createElement('img');
+        img.src = item.img;
+        const link = document.createElement('a');
+        link.href = item.img;
+        link.target = '_blank';
+        link.appendChild(img);
+        card.appendChild(link);
 
-            // 创建图片链接
-            const link = document.createElement('a');
-            link.href = item[key];
-            link.target = '_blank';
+        // 添加卡片内容
+        const cardContent = document.createElement('div');
+        cardContent.classList.add('card-content');
 
-            // 显示图片
-            const img = document.createElement('img');
-            img.src = item[key];
-            img.style.width = '100px';
-            img.style.height = '100px';
+        // 添加卡片标签
+        const cardTags = document.createElement('div');
+        cardTags.classList.add('card-tags');
+        const tagLabels = item.tags.split(',').map(tag => {
+          return `<div class="tag">${tag.trim()}</div>`;
+        }).join('');
+        cardTags.innerHTML = tagLabels;
+        cardContent.appendChild(cardTags);
 
-            // 将图片添加到链接中，并将链接添加到单元格中
-            link.appendChild(img);
-            td.appendChild(link);
-
-          } else {
-            td.textContent = item[key];
-          }
-          tr.appendChild(td);
+        // 添加prompt
+        const prompt = document.createElement('div');
+        prompt.classList.add('card-prompt');
+        prompt.textContent = item.text;
+        prompt.addEventListener('mouseover', function() {
+          prompt.style.cursor = 'pointer';
         });
-        tbody.appendChild(tr);
+        prompt.addEventListener('click', function() {
+          navigator.clipboard.writeText(prompt.textContent).then(function() {
+            prompt.style.animation = 'blink 0.1s linear 2';
+          });
+        });
+        cardContent.appendChild(prompt);
+
+        // 显示msg值
+        const msg = document.createElement('div');
+        msg.textContent = item.msg;
+        msg.classList.add('pool-msg');
+        cardContent.appendChild(msg);
+        card.appendChild(cardContent);
+
+        // 添加卡片操作
+        const cardOptions = document.createElement('div');
+        cardOptions.classList.add('card-options');
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'DEL';
+        delBtn.classList.add('error-button');
+        delBtn.onclick = function() {
+          delpoolob(index);
+        };
+        cardOptions.appendChild(delBtn);
+
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.classList.add('main-button');
+        editBtn.onclick = function() {
+          editpoolob(index, item);
+        };
+        cardOptions.appendChild(editBtn);
+        card.appendChild(cardOptions);
+
+        poolCards.appendChild(card);
+
       });
-      poolTable.appendChild(tbody);
     });
   });
-
 }
+
+
 
 
 function delpoolob(index) {
@@ -367,6 +409,7 @@ function saveTag() {
 function showTags() {
   chrome.storage.local.get({ tags: [], checkedTags: [] }, function(result) {
     const tags = result.tags;
+    countAllTagSpan.innerText = `(${tags.length+1})`;
     tags.unshift('default');
     let html = "";
     for (let tag of tags) {

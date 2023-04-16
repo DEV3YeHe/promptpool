@@ -1,7 +1,7 @@
 {
-  "name": "PromptPool",
-  "version": "2.1",
-  "description": "Save selected text to a local pool",
+  "name": "NijiPrompt",
+  "version": "0.1",
+  "description": "Save selected text to a local pool, Real-time translation, export your pool to share with others, import other people's pool to gain new capabilities.",
   "manifest_version": 3,
   "permissions": [
     "contextMenus",
