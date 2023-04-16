@@ -224,13 +224,14 @@
     /* 2. 左右两侧区域样式 */
     .container {
       display: flex;
-      height: calc(100vh);
+      height: calc(100vh - 36px);
       background-color: #15161A;
     }
 
     .sidebar {
       width: 100px;
       background-color: #15161A;
+      height: calc(100vh - 76px);
       padding: 20px;
       border-right: 1px solid #2B2C30;
     }
@@ -239,7 +240,7 @@
       flex: 1;
       padding: 20px;
       overflow-y: auto;
-      height: calc(100vh - 100px);
+      height: calc(100vh - 76px);
     }
 
 
@@ -330,24 +331,9 @@
     }
 
 
-    /*button.del {
-      display: block;
-      width: 60px;
-      height: 20px;
-      font-size: 12px;
-      background-color: red;
-      color: white;
-      margin-bottom: 12px;
-    }
-
-    button.edit {
-      display: block;
-      width: 60px;
-      height: 20px;
-      font-size: 12px;
-      background-color: white;
-      color: #333;
-    }*/
+.success-message {
+  color: white;
+}
 
     .pooltitle {
       display: inline-block;
@@ -443,6 +429,7 @@
         </div>
         <button id="import-button">Import</button>
         <button id="export-button">Export</button>
+        <div id="imexmsg"></div>
       </section>
 
       <section class="tab-content" data-tab="settings-tab">

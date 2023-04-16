@@ -287,6 +287,7 @@ function exportPool() {
 }
 
 function importPool() {
+  const imexmsg = document.getElementById("imexmsg");
   const input = document.createElement("input");
   input.type = "file";
   input.accept = ".json";
@@ -324,12 +325,12 @@ function importPool() {
         });
         const newPool = [...existingPool, ...newItems, ...updatedItems];
         chrome.storage.local.set({ pool: newPool }, function() {
-          const successMessage = document.createElement("span");
+          const successMessage = document.createElement("p");
           successMessage.innerText = `Imported ${newItems.length} new items, updated ${updatedItems.length} items successfully.`;
           successMessage.className = "success-message";
-          document.body.appendChild(successMessage);
+          imexmsg.appendChild(successMessage);
           setTimeout(function() {
-            document.body.removeChild(successMessage);
+            imexmsg.removeChild(successMessage);
             collectTags();
           }, 1500);
         });
