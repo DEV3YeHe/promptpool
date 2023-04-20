@@ -45,7 +45,6 @@ chrome.storage.local.get({ pool: [] }, function(result) {
   countAll.innerText = `(${pool.length})`;
 });
 
-
 let isPopupOpen = false;
 
 walletIcon.addEventListener('click', () => {
@@ -59,8 +58,6 @@ closeButton.addEventListener('click', () => {
   popupContainer.style.display = 'none';
   isPopupOpen = false;
 });
-
-
 
 let lang = 'zh'; // Set default value
 chrome.storage.sync.get(['lang'], function(result) {
@@ -177,12 +174,29 @@ function showPool() {
 function delpoolob(index) {
   chrome.storage.local.get({ pool: [] }, function(result) {
     const pool = result.pool;
-    pool.splice(index, 1); // 删除对应的对象
-    chrome.storage.local.set({ pool: pool }, function() {
-      showPool(); // 更新界面
+
+    chrome.storage.local.get({ tags: [] }, function(tagResult) {
+      const tags = tagResult.tags;
+      const checkedTags = Array.from(document.querySelectorAll('input[name="tag-checkbox"]:checked')).map(el => el.value);
+
+      // 找到展示的列表项中对应的对象
+      const filteredPool = pool.filter(item => {
+        return item.tags.split(',').some(tag => checkedTags.includes(tag.trim()));
+      });
+      const targetObj = filteredPool[index];
+
+      // 在整个pool数组中删除该对象
+      const targetIndex = pool.findIndex(item => item === targetObj);
+      if (targetIndex !== -1) {
+        pool.splice(targetIndex, 1);
+        chrome.storage.local.set({ pool: pool }, function() {
+          showPool(); // 更新界面
+        });
+      }
     });
   });
 }
+
 
 function editpoolob(index, item) {
   // 创建输入框和按钮
@@ -449,24 +463,23 @@ function showTags() {
 
 
 
-
-  function bindDeleteButtonListeners() {
-    const deleteButtons = document.querySelectorAll(".delete-button");
-    deleteButtons.forEach(button => {
-      button.addEventListener("click", function() {
-        const tag = button.dataset.tag;
-        chrome.storage.local.get({ tags: [] }, function(result) {
-          const tags = result.tags;
-          const index = tags.indexOf(tag);
-          if (index !== -1) {
-            tags.splice(index, 1);
-            chrome.storage.local.set({ tags: tags }, function() {
-              showTags(); // 删除Tag成功后更新Tag列表
-            });
-          }
-        });
+function bindDeleteButtonListeners() {
+  const deleteButtons = document.querySelectorAll(".delete-button");
+  deleteButtons.forEach(button => {
+    button.addEventListener("click", function() {
+      const tag = button.dataset.tag;
+      chrome.storage.local.get({ tags: [] }, function(result) {
+        const tags = result.tags;
+        const index = tags.indexOf(tag);
+        if (index !== -1) {
+          tags.splice(index, 1);
+          chrome.storage.local.set({ tags: tags }, function() {
+            showTags(); // 删除Tag成功后更新Tag列表
+          });
+        }
       });
     });
-  }
+  });
+}
 
-    showTags();
+showTags();
