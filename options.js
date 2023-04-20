@@ -1,5 +1,7 @@
 const importButton = document.getElementById("import-button");
+const importButton2 = document.getElementById("import-button2");
 const exportButton = document.getElementById("export-button");
+const exportButtonChecked = document.getElementById("export-checked-button");
 const saveTagButton = document.getElementById("save-tag-button");
 const tagInput = document.getElementById("tag-input");
 const tagResult = document.getElementById("tag-result");
@@ -19,7 +21,9 @@ const countAllTagSpan = document.getElementById("countalltag");
 
 exportButton.addEventListener("click", exportPool);
 importButton.addEventListener("click", importPool);
+importButton2.addEventListener("click", importPool);
 saveTagButton.addEventListener("click", saveTag);
+exportButtonChecked.addEventListener("click", exportPoolChecked);
 
 const tabs = document.querySelectorAll('.tab');
 tabs.forEach(tab => {
@@ -94,7 +98,7 @@ function showPool() {
       const checkedTags = Array.from(document.querySelectorAll('input[name="tag-checkbox"]:checked')).map(el => el.value);
       pool.filter(item => {
         return item.tags.split(',').some(tag => checkedTags.includes(tag.trim()));
-      }).forEach((item, index) => {
+      }).reverse().forEach((item, index) => {
         const card = document.createElement('div');
         card.classList.add('card');
 
@@ -199,74 +203,100 @@ function delpoolob(index) {
 
 
 function editpoolob(index, item) {
-  // 创建输入框和按钮
-  const imgInput = document.createElement('input');
-  imgInput.type = 'text';
-  imgInput.value = item.img;
-  const textInput = document.createElement('input');
-  textInput.type = 'text';
-  textInput.value = item.text;
-  const msgInput = document.createElement('input');
-  msgInput.type = 'text';
-  msgInput.value = item.msg;
-  const tagsInput = document.createElement('input');
-  tagsInput.type = 'text';
-  tagsInput.value = item.tags;
-  const saveBtn = document.createElement('button');
-  saveBtn.textContent = 'Save';
-  saveBtn.onclick = function() {
-    item.img = imgInput.value;
-    item.text = textInput.value;
-    item.msg = msgInput.value;
-    item.tags = tagsInput.value;
-    chrome.storage.local.get({ pool: [] }, function(result) {
-      const pool = result.pool;
-      pool[index] = item;
-      chrome.storage.local.set({ pool: pool }, function() {
-        showPool();
-        collectTags();
-        dialog.close(); // 更新界面并关闭弹窗
-      });
-    });
-  };
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.onclick = function() {
-    dialog.close(); // 关闭弹窗
-  };
+  chrome.storage.local.get({ pool: [] }, function(result) {
+    const pool = result.pool;
 
-  // 创建弹窗并显示
-  const dialog = document.createElement('dialog');
-  const form = document.createElement('form');
-  const fieldset = document.createElement('fieldset');
-  const legend = document.createElement('legend');
-  legend.textContent = 'Edit Pool Object';
-  fieldset.appendChild(legend);
-  const imgLabel = document.createElement('label');
-  imgLabel.textContent = 'IMG:';
-  imgLabel.appendChild(imgInput);
-  fieldset.appendChild(imgLabel);
-  const textLabel = document.createElement('label');
-  textLabel.textContent = 'Prompt:';
-  textLabel.appendChild(textInput);
-  fieldset.appendChild(textLabel);
-  const msgLabel = document.createElement('label');
-  msgLabel.textContent = 'Translation:';
-  msgLabel.appendChild(msgInput);
-  fieldset.appendChild(msgLabel);
-  const tagsLabel = document.createElement('label');
-  tagsLabel.textContent = 'Tags:';
-  tagsLabel.appendChild(tagsInput);
-  fieldset.appendChild(tagsLabel);
-  form.appendChild(fieldset);
-  const btnGroup = document.createElement('div');
-  btnGroup.classList.add('btn-group');
-  btnGroup.appendChild(saveBtn);
-  btnGroup.appendChild(cancelBtn);
-  form.appendChild(btnGroup);
-  dialog.appendChild(form);
-  document.body.appendChild(dialog);
-  dialog.showModal();
+    chrome.storage.local.get({ tags: [] }, function(tagResult) {
+      const tags = tagResult.tags;
+      const checkedTags = Array.from(document.querySelectorAll('input[name="tag-checkbox"]:checked')).map(el => el.value);
+
+      // 找到展示的列表项中对应的对象
+      const filteredPool = pool.filter(item => {
+        return item.tags.split(',').some(tag => checkedTags.includes(tag.trim()));
+      });
+      const targetObj = filteredPool[index];
+
+      // 创建输入框和按钮
+const imgInput = document.createElement('input');
+imgInput.type = 'text';
+imgInput.value = targetObj.img;
+const tagsInput = document.createElement('select');
+
+// 填充下拉框选项
+tags.forEach(tag => {
+  const option = document.createElement('option');
+  option.value = tag;
+  option.textContent = tag;
+  if (targetObj.tags.split(',').includes(tag)) {
+    option.selected = true;
+  }
+  tagsInput.appendChild(option);
+});
+
+const textInput = document.createElement('textarea');
+textInput.rows = 3;
+textInput.value = targetObj.text;
+const msgInput = document.createElement('textarea');
+msgInput.rows = 3;
+msgInput.value = targetObj.msg;
+
+const saveBtn = document.createElement('button');
+saveBtn.textContent = 'Save';
+saveBtn.classList.add('right-button');
+saveBtn.onclick = function() {
+  targetObj.img = imgInput.value;
+  targetObj.text = textInput.value;
+  targetObj.msg = msgInput.value;
+  targetObj.tags = Array.from(tagsInput.selectedOptions).map(option => option.value).join(',');
+  chrome.storage.local.set({ pool: pool }, function() {
+    showPool();
+    collectTags();
+    dialog.close(); // 更新界面并关闭弹窗
+  });
+};
+
+const cancelBtn = document.createElement('button');
+cancelBtn.textContent = 'Cancel';
+cancelBtn.classList.add('main-button');
+cancelBtn.onclick = function() {
+  dialog.close(); // 关闭弹窗
+};
+
+// 创建弹窗并显示
+const dialog = document.createElement('dialog');
+const form = document.createElement('form');
+const fieldset = document.createElement('fieldset');
+const legend = document.createElement('legend');
+legend.textContent = 'Edit Prompt';
+fieldset.appendChild(legend);
+const imgLabel = document.createElement('label');
+imgLabel.textContent = 'IMG:';
+imgLabel.appendChild(imgInput);
+fieldset.appendChild(imgLabel);
+const tagsLabel = document.createElement('label');
+tagsLabel.textContent = 'Tags:';
+tagsLabel.appendChild(tagsInput);
+fieldset.appendChild(tagsLabel);
+const textLabel = document.createElement('label');
+textLabel.textContent = 'Prompt:';
+textLabel.appendChild(textInput);
+fieldset.appendChild(textLabel);
+const msgLabel = document.createElement('label');
+msgLabel.textContent = 'Translation:';
+msgLabel.appendChild(msgInput);
+fieldset.appendChild(msgLabel);
+form.appendChild(fieldset);
+const btnGroup = document.createElement('div');
+btnGroup.classList.add('btn-group');
+btnGroup.appendChild(saveBtn);
+btnGroup.appendChild(cancelBtn);
+form.appendChild(btnGroup);
+dialog.appendChild(form);
+document.body.appendChild(dialog);
+dialog.showModal();
+
+    });
+  });
 }
 
 // 显示界面
@@ -299,6 +329,45 @@ function exportPool() {
     }, 1500);
   });
 }
+
+function exportPoolChecked() {
+  chrome.storage.local.get({ pool: [] }, function(result) {
+    const pool = result.pool;
+
+    chrome.storage.local.get({ tags: [] }, function(tagResult) {
+      const tags = tagResult.tags;
+      const checkedTags = Array.from(document.querySelectorAll('input[name="tag-checkbox"]:checked')).map(el => el.value);
+
+    // 找到需要导出的池对象
+    const filteredPool = pool.filter(item => {
+      return item.tags.split(',').some(tag => checkedTags.includes(tag.trim()));
+    });
+
+    const textToSave = JSON.stringify(filteredPool);
+
+    const blob = new Blob([textToSave], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const filename = "ThisList.json";
+    const downloadLink = document.createElement("a");
+    downloadLink.download = filename;
+    downloadLink.href = url;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+
+    const message = document.createElement("span");
+    message.innerText = "Saved successfully";
+    message.className = "success-message";
+    document.body.appendChild(message);
+
+    setTimeout(function() {
+      document.body.removeChild(message);
+    }, 1500);
+  });
+    });
+}
+
 
 function importPool() {
   const imexmsg = document.getElementById("imexmsg");

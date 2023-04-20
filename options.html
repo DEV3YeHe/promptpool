@@ -206,6 +206,20 @@
   border: 1px solid #fff;
 }
 
+.right-button {
+  padding: 4px 6px;
+  width: 60px;
+  background-color: green;
+  color: white;
+  border: 1px solid green;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.right-button:hover {
+  border: 1px solid #fff;
+}
+
 #collectTagsButton {
   padding: 10px 20px;
   background-color: #999;
@@ -350,6 +364,148 @@
     #tag-checkbox {
       margin-bottom: 16px;
     }
+
+    /* 默认样式 */
+    #pool-cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+
+    .pool-card {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    /* 窗口宽度大于等于900px时的样式 */
+    @media screen and (min-width: 900px) {
+      #pool-cards {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 12px;
+      }
+
+      .pool-card {
+        width: calc(50% - 6px);
+        margin-bottom: 0;
+      }
+    }
+
+    /* 设置屏幕宽度大于1400px时的样式 */
+    @media (min-width: 1400px) {
+      #pool-cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+    }
+
+    #import-button2 {
+      background: linear-gradient(135deg, #5c5cff, #c25cff);
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.3s ease-in-out;
+      color: #fff;
+    }
+
+    #import-button2:hover {
+      background: linear-gradient(135deg, #6464ff, #d864ff);
+    }
+
+    #export-checked-button {
+      background: linear-gradient(135deg, #5c5cff, #c25cff);
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.3s ease-in-out;
+      color: #fff;
+    }
+
+    #export-checked-button:hover {
+      background: linear-gradient(135deg, #6464ff, #d864ff);
+    }
+
+    #countall {
+      margin-right: 20px;
+    }
+
+    .card-prompt {
+    max-height: 80px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: black;
+    }
+
+    .card-prompt::-webkit-scrollbar {
+    width: 3px;
+    }
+
+    .card-prompt::-webkit-scrollbar-track {
+    background-color: transparent;
+    }
+
+    .card-prompt::-webkit-scrollbar-thumb {
+    background-color: black;
+    border-radius: 1px;
+    }
+
+    .pool-msg {
+    max-height: 60px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: black;
+    }
+
+    .pool-msg::-webkit-scrollbar {
+    width: 3px;
+    }
+
+    .pool-msg::-webkit-scrollbar-track {
+    background-color: transparent;
+    }
+
+    .pool-msg::-webkit-scrollbar-thumb {
+    background-color: black;
+    border-radius: 1px;
+    }
+
+    .form-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .form-container label {
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .form-container textarea {
+      width: 100%;
+      resize: vertical;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 5px;
+      font-size: 16px;
+      font-family: Arial, sans-serif;
+    }
+
+    .form-container .btn-group {
+      margin-top: 10px;
+    }
+    .btn-group {
+      margin-top: 10px;
+    }
+    textarea {
+      width: 100%;
+    }
+
+
   </style>
 </head>
 <body>
@@ -400,6 +556,8 @@
       <section class="tab-content active" data-tab="pool-tab">
         <h2 class="pooltitle">My Pool</h2>
         <span id="countall"></span>
+        <button id="import-button2">Import</button>
+        <button id="export-checked-button">Export List</button>
         <div id="tag-checkbox" style="display: flex; flex-wrap: wrap;"></div>
         <div id="pool-cards"></div>
       </section>
@@ -428,7 +586,7 @@
           Export the Prompts you collect to your local backup, or share them with your friends.
         </div>
         <button id="import-button">Import</button>
-        <button id="export-button">Export</button>
+        <button id="export-button">Export All</button>
         <div id="imexmsg"></div>
       </section>
 
